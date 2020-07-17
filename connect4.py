@@ -126,7 +126,7 @@ def get_all_valid_locations(board):
 
     return valid_location_list
 
-def minimax(board, depth, maximizingPlayer):
+def minimax(board, depth, alpha, beta, maximizingPlayer):
     valid_column_list = get_all_valid_locations(board)
     if depth == 0 or winning_move(board, BOT_PIECE) or winning_move(board, PLAYER_PIECE) or len(valid_column_list) == 0:
         if winning_move(board, BOT_PIECE):
@@ -144,10 +144,14 @@ def minimax(board, depth, maximizingPlayer):
             row = get_next_open_row(board, col)
             temp_board = board.copy()
             drop_piece(temp_board, row, col, BOT_PIECE)
-            newScore = minimax(temp_board, depth-1, False)
+            newScore = minimax(temp_board, depth-1, alpha, beta, False)
             newScorePair = [newScore[0], col]
             if newScore[0] > maxVal[0]:
                 maxVal = newScorePair
+
+            alpha = max(alpha, newScore[0])
+            if alpha >= beta:
+                break
         return maxVal
     else:
         minVal = [math.inf, random.choice(valid_column_list)]
@@ -155,10 +159,14 @@ def minimax(board, depth, maximizingPlayer):
             row = get_next_open_row(board, col)
             temp_board = board.copy()
             drop_piece(temp_board, row, col, PLAYER_PIECE)
-            newScore = minimax(temp_board, depth-1, True)
+            newScore = minimax(temp_board, depth-1, alpha, beta, True)
             newScorePair = [newScore[0], col]
             if newScore[0] < minVal[0]:
                 minVal = newScorePair
+            
+            beta = min(beta, newScore[0])
+            if beta >= alpha:
+                break
         return minVal
 
 def pick_best_move(board,piece):
@@ -234,7 +242,7 @@ while game:
 
     # ask player 2 input
     if turn == BOT and game:
-        bestMove = minimax(board, 4, True)
+        bestMove = minimax(board, 5, -math.inf, math.inf, True)
         print(bestMove)
         col = bestMove[1]
     
