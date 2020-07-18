@@ -148,7 +148,6 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
             newScorePair = [newScore[0], col]
             if newScore[0] > maxVal[0]:
                 maxVal = newScorePair
-
             alpha = max(alpha, newScore[0])
             if alpha >= beta:
                 break
@@ -163,9 +162,8 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
             newScorePair = [newScore[0], col]
             if newScore[0] < minVal[0]:
                 minVal = newScorePair
-            
             beta = min(beta, newScore[0])
-            if beta >= alpha:
+            if alpha >= beta:
                 break
         return minVal
 
@@ -242,7 +240,7 @@ while game:
 
     # ask player 2 input
     if turn == BOT and game:
-        bestMove = minimax(board, 5, -math.inf, math.inf, True)
+        bestMove = minimax(board, 4, -math.inf, math.inf, True)
         print(bestMove)
         col = bestMove[1]
     
@@ -264,4 +262,4 @@ while game:
         
 
     if not game:
-        pygame.time.wait(5000)
+        pygame.time.wait(8000)
