@@ -206,13 +206,13 @@ while game:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-
+        
         if event.type == pygame.MOUSEMOTION:
             pygame.draw.rect(screen, BLACK, (0,0, width, squareSize))
             posX = event.pos[0]
             pygame.draw.circle(screen, RED, (posX, int(squareSize/2)), radius)
             pygame.display.update()
-
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
             pygame.draw.rect(screen, BLACK, (0,0, width, squareSize))
             # ask player 1 input
@@ -246,7 +246,6 @@ while game:
     
         if check_valid_position(board, col):
             row = get_next_open_row(board, col)
-            pygame.time.wait(500)
             drop_piece(board, row, col, 2)
         else: print('row already full')
 
