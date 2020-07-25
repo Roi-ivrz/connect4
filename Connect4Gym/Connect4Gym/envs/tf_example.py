@@ -3,7 +3,7 @@ rows = 6
 columns = 7
 board = np.eye(rows, columns)
 print('before: ', board)
-newboard = np.array(board).reshape()
+newboard = np.array(board).reshape(rows, columns,1)
 print('after: ', newboard)
 
 '''

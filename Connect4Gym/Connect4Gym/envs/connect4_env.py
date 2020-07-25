@@ -2,7 +2,10 @@ import numpy as np
 import pygame
 import sys, math, random
 from time import sleep
-from gym import spaces
+
+import gym
+from gym import error, spaces, utils
+from gym.utils import seeding
 
 BLUE = (40, 100, 219)
 BLACK = (0, 0, 0)
@@ -17,7 +20,7 @@ PLAYER_PIECE = 1
 BOT_PIECE = 2
 BLANK = 0
 
-class connectFourGym:
+class connect4Gym(gym.Env):
     def _init__(self, agent2="random"):
         self.rows = 6
         self.columns = 7
@@ -63,17 +66,63 @@ class connectFourGym:
             for row in range((in_a_row-1), ROW):
                 if board[row][column] == piece and board[row-1][column+1] == piece and board[row-2][column+2] == piece and board[row-3][column+3] == piece:
                     return True
+       
+    def get_action(self):
+        action = self.action_space.sample()
+        return action
+
+    def render(self, board):
+        pygame.init()
+        squareSize = 100
+        width = COLUMN * squareSize
+        height = (ROW + 1) * squareSize
+        size = (width, height)
+        radius = int(squareSize/2 * 0.85)
+        screen = pygame.display.set_mode(size)
+        pygame.display.update()
+        font = pygame.font.SysFont('monospace', 75)
+        
+        for c in range(COLUMN):
+            for r in range(ROW):
+                pygame.draw.rect(screen, BLUE, (c*squareSize, (r+1)*squareSize, squareSize, squareSize))
+                if board[r][c] == 0:
+                    pygame.draw.circle(screen, BLACK, (int(c*squareSize + squareSize/2), int((r+1)*squareSize + squareSize/2)), radius)
+                elif board[r][c] == 1:
+                    pygame.draw.circle(screen, RED, (int(c*squareSize + squareSize/2), int((r+1)*squareSize + squareSize/2)), radius)
+                else:
+                    pygame.draw.circle(screen, YELLOW, (int(c*squareSize + squareSize/2), int((r+1)*squareSize + squareSize/2)), radius)
+            pygame.display.update()
+        pygame.time.wait(2000)
+
+    def change_reward(self, old_reward, done):
+        if old_reward == 1: # The agent won the game
+            return 1
+        elif done: # The opponent won the game
+            return -1
+        else: # Reward 1/42
+            return 1/(self.rows*self.columns)
+
+    def step(self, action, board):
+        # get next open row
+        for row in range((self.rows-1), -1, -1):
+            if board[row][action] == 0:
+                is_valid = (board[row][action] == 0)
+                next_row = row
+        
+        if is_valid: #play the move 
+            self.obs, old_reward, done, _ = self.step(int(action), board)
+            reward = self.change_reward(old_reward, done)
+        else: #end game and penalize the agent
+            reward, done, _ = -10, True, {}
+
+        # return (observation, reward, done, info)
+        board[next_row][action] = 1
+        return board, reward, done, _
+
     '''
     def drop_piece(board, row, col, piece):
         board[row][col] = piece
 
-    def get_next_open_row(board, col):
-        for row in range((ROW-1), -1, -1):
-            if board[row][col] == 0:
-                return row
-    '''
-    
-    '''
     def window_scoring(window, piece):
         if piece == BOT_PIECE:
             opponent_piece = PLAYER_PIECE
@@ -189,46 +238,10 @@ class connectFourGym:
                 best_move[1] = score
         print('best move:', best_move)
         return best_move[0]
-    '''        
-    def get_action(self):
-        action = self.action_space.sample()
-        return action
-
-    def render(self, board):
-        pygame.init()
-        squareSize = 100
-        width = COLUMN * squareSize
-        height = (ROW + 1) * squareSize
-        size = (width, height)
-        radius = int(squareSize/2 * 0.85)
-        screen = pygame.display.set_mode(size)
-        pygame.display.update()
-        font = pygame.font.SysFont('monospace', 75)
-        
-        for c in range(COLUMN):
-            for r in range(ROW):
-                pygame.draw.rect(screen, BLUE, (c*squareSize, (r+1)*squareSize, squareSize, squareSize))
-                if board[r][c] == 0:
-                    pygame.draw.circle(screen, BLACK, (int(c*squareSize + squareSize/2), int((r+1)*squareSize + squareSize/2)), radius)
-                elif board[r][c] == 1:
-                    pygame.draw.circle(screen, RED, (int(c*squareSize + squareSize/2), int((r+1)*squareSize + squareSize/2)), radius)
-                else:
-                    pygame.draw.circle(screen, YELLOW, (int(c*squareSize + squareSize/2), int((r+1)*squareSize + squareSize/2)), radius)
-            pygame.display.update()
-        pygame.time.wait(2000)
-
-    def step(self, action):
-        is_valid = (board[0][action] == 0)
-        if is_valid: #valid move
-            sfd
-        else: #end game and penalize the agent
-            reward, done, _ = -10, True, {}
-
-
-
+    ''' 
 ##################################################################################################################
 
-
+'''
 game = True
 turn = random.randint(PLAYER, BOT)
 env = connectFourGym()
@@ -238,9 +251,13 @@ env.render(board)
 
 action = env.get_action()
 env.step(action)
+'''
 
+from stable_baselines.common.env_checker import check_env
 
-
+env = connectFourGym()
+# It will check your custom environment and output additional warnings if needed
+check_env(env)
 
 '''
 while game:
